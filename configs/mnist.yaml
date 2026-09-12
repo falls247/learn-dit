@@ -1,0 +1,40 @@
+# MNIST: ラベル条件付き画像生成 (VAE なし / ピクセル空間 DiT)
+task: mnist
+seed: 42
+device: auto           # auto | cuda | cpu
+output_dir: outputs
+
+data:
+  root: data/mnist
+  val_size: 5000       # 公式 train 60,000 -> 55,000 / 5,000 (seed 42)
+
+model:
+  hidden_dim: 128
+  depth: 4
+  num_heads: 4
+  patch_size: 4        # 28x28 -> 7x7 = 49 tokens, token_dim = 16
+  image_size: 28
+  in_channels: 1
+  num_classes: 10
+
+train:
+  batch_size: 128
+  lr: 1.0e-4
+  weight_decay: 0.01
+  max_steps: 30000
+  time_budget_sec: 1800   # 取得・前処理・学習後評価は含めない
+  grad_clip: 1.0
+  log_every: 50
+  val_every: 500
+  save_every: 500
+  num_workers: 4
+  amp: true               # bf16 autocast (CUDA のみ)
+
+sample:
+  steps: 32
+  steps_sweep: [4, 8, 16, 32]
+  num_per_class: 8
+  intermediate_snapshots: 8
+
+eval:
+  num_seeds: 20           # MNIST では未使用

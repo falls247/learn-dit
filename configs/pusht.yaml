@@ -1,0 +1,50 @@
+# PushT: 観測条件付き動作生成 (画像2時点 + 2次元位置 -> 未来16ステップの2次元目標位置)
+task: pusht
+seed: 42
+device: auto
+output_dir: outputs
+
+data:
+  root: data/pusht
+  repo_id: lerobot/pusht
+  revision: main          # prepare 実行時に解決したリビジョンを meta.json に記録する
+  val_episodes: 21        # 206 -> 185 / 21 (seed 42)
+  obs_horizon: 2
+  action_horizon: 16
+  exec_horizon: 8         # 先頭8ステップを実行して再観測
+  image_size: 96
+
+model:
+  hidden_dim: 128
+  depth: 4
+  num_heads: 4
+  action_dim: 2
+  obs_horizon: 2
+  action_horizon: 16
+  image_size: 96
+  in_channels: 3
+
+train:
+  batch_size: 128
+  lr: 1.0e-4
+  weight_decay: 0.01
+  max_steps: 30000
+  time_budget_sec: 1800
+  grad_clip: 1.0
+  log_every: 50
+  val_every: 500
+  save_every: 500
+  num_workers: 4
+  amp: true
+
+sample:
+  steps: 32
+  steps_sweep: [4, 8, 16, 32]
+  num_per_class: 4
+  intermediate_snapshots: 8
+
+eval:
+  num_seeds: 20           # 未学習/学習後で同一の初期化 seed 20 個を共有
+  max_env_steps: 300
+  fps: 10
+  save_video: true
